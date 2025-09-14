@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 class BodhikaServer {
-  constructor(port = 3001) {
+  constructor(port = process.env.PORT || 8080) {
     this.port = port;
     this.wss = null;
     this.bridge = null;
@@ -236,7 +236,7 @@ class BodhikaServer {
   }
 }
 
-const port = process.env.WS_PORT || 3001;
+const port = process.env.PORT || process.env.WS_PORT || 8080;
 const server = new BodhikaServer(port);
 await server.start();
 
