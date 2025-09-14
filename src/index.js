@@ -7,6 +7,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import http from 'http';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ const __dirname = path.dirname(__filename);
 class BodhikaServer {
   constructor(port = process.env.PORT || 8080) {
     this.port = port;
+    this.server = null;
     this.wss = null;
     this.bridge = null;
     this.vectorStore = null;
@@ -59,17 +61,43 @@ class BodhikaServer {
 
     this.bridge = new ESP32GeminiBridge(this.vectorStore);
 
-    console.log('🚀 [SERVER] Starting WebSocket server...');
+    console.log('🚀 [SERVER] Starting HTTP/WebSocket server...');
     console.log(`📍 [SERVER] Port: ${this.port}`);
     console.log(`📍 [SERVER] Compression: Disabled for audio`);
+    console.log(`📍 [SERVER] API Key configured: ${!!process.env.GEMINI_API_KEY}`);
+
+    this.server = http.createServer((req, res) => {
+      if (req.url === '/' || req.url === '/health') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          status: 'healthy',
+          service: 'Bodhika Server',
+          timestamp: new Date().toISOString(),
+          apiKeyConfigured: !!process.env.GEMINI_API_KEY,
+          environment: process.env.NODE_ENV || 'development'
+        }));
+      } else {
+        res.writeHead(404);
+        res.end('Not Found');
+      }
+    });
 
     this.wss = new WebSocketServer({
-      port: this.port,
+      server: this.server,
       perMessageDeflate: false
     });
 
-    console.log(`✅ [SERVER] WebSocket server listening on port ${this.port}`);
-    console.log(`🔗 [SERVER] URL: ws://localhost:${this.port}`);
+    this.server.listen(this.port, () => {
+      console.log(`✅ [SERVER] HTTP/WebSocket server listening on port ${this.port}`);
+      console.log(`🔗 [SERVER] HTTP Health: http://localhost:${this.port}/health`);
+      console.log(`🔗 [SERVER] WebSocket: ws://localhost:${this.port}`);
+
+      if (!process.env.GEMINI_API_KEY) {
+        console.warn('\n⚠️  [SERVER] WARNING: GEMINI_API_KEY not set!');
+        console.warn('⚠️  [SERVER] Server is running but Gemini features are disabled.');
+        console.warn('⚠️  [SERVER] Set GEMINI_API_KEY environment variable to enable AI features.');
+      }
+    });
 
     this.wss.on('connection', (ws, req) => {
       console.log('\n🔌 [SERVER] New connection initiated');
@@ -82,7 +110,7 @@ class BodhikaServer {
       console.error(`📍 [SERVER] Error stack:`, error.stack);
     });
 
-    return this.wss;
+    return this.server;
   }
 
   handleConnection(ws, req) {
@@ -219,6 +247,11 @@ class BodhikaServer {
     if (this.wss) {
       this.wss.close(() => {
         console.log('WebSocket server stopped');
+      });
+    }
+    if (this.server) {
+      this.server.close(() => {
+        console.log('HTTP server stopped');
       });
     }
     if (this.bridge) {

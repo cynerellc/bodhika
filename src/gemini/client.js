@@ -9,18 +9,31 @@ const __dirname = path.dirname(__filename);
 
 export class GeminiLiveClient {
   constructor(vectorStore) {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is required');
-    }
-
-    this.client = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY
-    });
+    this.apiKey = process.env.GEMINI_API_KEY;
+    this.client = null;
     this.modelName = process.env.MODEL_NAME || 'gemini-2.0-flash-exp';
     this.voiceName = process.env.VOICE_NAME || 'Leda';
     this.sessions = new Map();
     this.vectorStore = vectorStore;
     this.systemPrompt = '';
+    this.isInitialized = false;
+
+    if (this.apiKey) {
+      this.initialize();
+    } else {
+      console.warn('⚠️ [GEMINI] GEMINI_API_KEY not set. Gemini features will be disabled.');
+    }
+  }
+
+  initialize() {
+    if (!this.apiKey) {
+      throw new Error('Cannot initialize Gemini client without API key');
+    }
+
+    this.client = new GoogleGenAI({
+      apiKey: this.apiKey
+    });
+    this.isInitialized = true;
     this.loadSystemPrompt();
   }
 
@@ -80,6 +93,10 @@ Remember you're interacting through audio, so:
   }
 
   async createSession(callbacks = {}) {
+    if (!this.isInitialized) {
+      throw new Error('Gemini client not initialized. Please set GEMINI_API_KEY.');
+    }
+
     try {
       console.log('\n=== GEMINI SESSION CREATION START ===');
       console.log('[GEMINI] Creating live audio session');

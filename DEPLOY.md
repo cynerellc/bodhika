@@ -79,11 +79,12 @@ gcloud run deploy bodhika-server \
   --set-env-vars NODE_ENV=production
 ```
 
-### 4. Set Environment Variables
+### 4. Set Environment Variables (CRITICAL)
 
-After deployment, set the required environment variables:
+**IMPORTANT**: The server will start without `GEMINI_API_KEY` but won't handle WebSocket connections properly. You MUST set the API key immediately after deployment:
 
 ```bash
+# Set the API key (REQUIRED - replace YOUR_API_KEY with actual key)
 gcloud run services update bodhika-server \
   --region us-central1 \
   --update-env-vars GEMINI_API_KEY=YOUR_API_KEY \
@@ -92,6 +93,8 @@ gcloud run services update bodhika-server \
   --update-env-vars SESSION_TIMEOUT=900000 \
   --update-env-vars MAX_SESSIONS=100
 ```
+
+**Note**: The server now includes a health check endpoint at `/health` that allows it to start even without the API key, preventing deployment failures. However, WebSocket connections will fail until the API key is configured.
 
 ### 5. Get Service URL
 
