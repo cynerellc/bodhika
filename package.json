@@ -1,0 +1,22 @@
+{
+  "name": "bodhika-server",
+  "version": "1.0.0",
+  "description": "WebSocket server for Bodhika AI Science Teacher - connects ESP32 devices with Gemini Live Audio",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.15.0",
+    "ws": "^8.18.0",
+    "uuid": "^10.0.0",
+    "bufferutil": "^4.0.9",
+    "utf-8-validate": "^6.0.5",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
