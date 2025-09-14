@@ -17,7 +17,7 @@ export class GeminiLiveClient {
       apiKey: process.env.GEMINI_API_KEY
     });
     this.modelName = process.env.MODEL_NAME || 'gemini-2.0-flash-exp';
-    this.voiceName = process.env.VOICE_NAME || 'Orus';
+    this.voiceName = process.env.VOICE_NAME || 'Leda';
     this.sessions = new Map();
     this.vectorStore = vectorStore;
     this.systemPrompt = '';
