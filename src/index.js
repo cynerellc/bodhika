@@ -23,6 +23,7 @@ class BodhikaServer {
     this.vectorStore = null;
   }
 
+  
   async loadTextbookData() {
     console.log('📚 [SERVER] Loading textbook data...');
 

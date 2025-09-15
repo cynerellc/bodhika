@@ -37,9 +37,10 @@ export class GeminiLiveClient {
     this.loadSystemPrompt();
   }
 
+
   async loadSystemPrompt() {
     try {
-      const promptPath = path.join(__dirname, '..', '..', 'data', 'system-prompt.md');
+      const promptPath =  path.join(__dirname, '..', '..', 'data', 'system-prompt-hardcode.md');
       this.systemPrompt = await fs.readFile(promptPath, 'utf-8');
       console.log('[GEMINI] System prompt loaded successfully from:', promptPath);
       console.log('[GEMINI] System prompt length:', this.systemPrompt.length, 'characters');
